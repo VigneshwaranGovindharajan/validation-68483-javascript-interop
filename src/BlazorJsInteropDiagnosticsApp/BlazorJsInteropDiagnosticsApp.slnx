@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="BlazorJsInteropDiagnosticsApp.Client/BlazorJsInteropDiagnosticsApp.Client.csproj" />
+  <Project Path="BlazorJsInteropDiagnosticsApp.RCL/BlazorJsInteropDiagnosticsApp.RCL.csproj" />
+  <Project Path="BlazorJsInteropDiagnosticsApp/BlazorJsInteropDiagnosticsApp.csproj" />
+</Solution>

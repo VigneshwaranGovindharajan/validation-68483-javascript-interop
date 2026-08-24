@@ -1,0 +1,56 @@
+﻿@page "/bl0016-prerendering"
+@inject IJSRuntime JS
+
+<PageTitle>BL0016 Prerendering Test</PageTitle>
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>BL0016: Static SSR Prerendering Failure</h1>
+            <p class="text-muted">
+                Demonstrates why BL0016 warning exists: JavaScript interop calls fail during Static SSR prerendering.
+                This page renders on the server where JavaScript is unavailable.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">PRERENDERING FAILURE (Triggers BL0016)</h5>
+                </div>
+                <div class="card-body">
+                    <h6>What Happens:</h6>
+                    <p>
+                        When a page renders on the server (Static SSR), JavaScript is not available.
+                        Any JS interop call in lifecycle methods fails immediately:
+                    </p>
+
+                    <pre>
+                        <code>
+protected override async Task OnInitializedAsync()
+{
+    // This fails during Static SSR rendering!
+    var data = await JS.InvokeAsync&lt;string&gt;("getConfiguration");
+}
+                        </code>
+                    </pre>
+
+                    <p class="alert alert-danger mt-3">
+                        <strong>Runtime Error:</strong><br/>
+                        "JavaScript interop calls cannot be issued at this time because the component is being statically rendered."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // This fails during Static SSR rendering!
+        // var data = await JS.InvokeAsync<string>("getConfiguration");
+    }
+}

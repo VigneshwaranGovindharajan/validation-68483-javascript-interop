@@ -1,0 +1,110 @@
+@page "/index"
+@rendermode InteractiveServer
+
+<PageTitle>Blazor JS Interop Diagnostics</PageTitle>
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>Blazor JavaScript Interop Analyzer Diagnostics</h1>
+            <p class="lead">
+                Validation Scenario #68483: Testing build-time analyzer warnings for JavaScript interop mistakes.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Test Scenarios</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        This application intentionally demonstrates three analyzer diagnostics that catch 
+                        JavaScript interop mistakes at build time:
+                    </p>
+                    
+                    <div class="list-group">
+                        <NavLink href="/bl0010" class="list-group-item list-group-item-action">
+                            <h6 class="mb-1">⚠️ BL0010: InvokeAsync&lt;object&gt; for void functions</h6>
+                            <small>Test incorrect vs correct invoke patterns</small>
+                        </NavLink>
+                        
+                        <NavLink href="/bl0015" class="list-group-item list-group-item-action">
+                            <h6 class="mb-1">⚠️ BL0015: Private [JSInvokable] methods</h6>
+                            <small>Test method accessibility from JavaScript (includes automatic code fix)</small>
+                        </NavLink>
+                        
+                        <NavLink href="/bl0016" class="list-group-item list-group-item-action">
+                            <h6 class="mb-1">⚠️ BL0016: Unguarded JavaScript interop calls</h6>
+                            <small>Test guarded vs unguarded calls during prerendering (includes automatic code fix)</small>
+                        </NavLink>
+                        
+                        <NavLink href="/correct-interop" class="list-group-item list-group-item-action">
+                            <h6 class="mb-1">✅ Correct Interop Patterns</h6>
+                            <small>All correct patterns that produce NO warnings</small>
+                        </NavLink>
+                        
+                        <NavLink href="/runtime-validation" class="list-group-item list-group-item-action">
+                            <h6 class="mb-1">💥 Runtime Validation: See Actual Failures</h6>
+                            <small>Demonstrates the runtime crashes that the warnings predict</small>
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <strong>Testing Instructions:</strong>
+                <ol>
+                    <li>Build the application: <code>dotnet build</code></li>
+                    <li>Check build output for warnings: BL0010, BL0015, BL0016</li>
+                    <li>Navigate to each test page above</li>
+                    <li>Test automatic code fixes (IDE: Ctrl+.)</li>
+                    <li>Run the application and verify runtime behavior</li>
+                    <li>Capture evidence for validation report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-warning">
+                <strong>Build Output Expectations:</strong>
+                <ul>
+                    <li>One BL0010 warning in BL0010Diagnostic.razor (incorrect invoke pattern)</li>
+                    <li>One BL0015 warning in BL0015Diagnostic.razor (private [JSInvokable])</li>
+                    <li>One BL0016 warning in BL0016Diagnostic.razor (unguarded JS interop)</li>
+                    <li>No warnings in CorrectInterop.razor, RuntimeValidation.razor, or this page</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .list-group-item {
+        border: 1px solid #dee2e6;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        text-decoration: none;
+    }
+    
+    .list-group-item h6 {
+        color: #495057;
+    }
+    
+    .list-group-item small {
+        color: #6c757d;
+    }
+</style>

@@ -1,0 +1,111 @@
+@page "/bl0016"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<PageTitle>BL0016 Diagnostic Test</PageTitle>
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>BL0016: Unguarded JavaScript Interop Calls</h1>
+            <p class="text-muted">
+                Test the analyzer warning for JavaScript calls during prerendering.
+                This warning has an automatic code fix that moves code to OnAfterRender.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">❌ INCORRECT PATTERN (Triggers BL0016)</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Problem:</h6>
+                    <p>
+                        If the following unguarded JavaScript interop call is uncommented:
+                    </p>
+
+                    <pre>
+                        <code>
+protected override async Task OnInitializedAsync()
+{
+    // var unguardedDate = await JS.InvokeAsync&lt;string&gt("getCurrentDate");
+    // System.Diagnostics.Debug.WriteLine($"Unguarded call: {unguardedDate}");
+}
+                        </code>
+                    </pre>
+
+                    <p>
+                        the application throws:
+                    </p>
+
+                    <blockquote>
+                        JavaScript interop calls cannot be issued at this time because the
+                        component is being statically rendered.
+                    </blockquote>
+
+                    <p>
+                        To keep this demo running, the invalid code (the unguarded JavaScript interop call)
+                        remains commented out.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">CORRECT PATTERN (No Warning)</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Why This Is Correct:</h6>
+                    <p>
+                        <code>OnAfterRender()</code> runs <strong>after the browser is ready</strong>.
+                        The <code>if (firstRender)</code> guard ensures this expensive operation
+                        only runs once (not on every render).
+                    </p>
+
+                    <h6>Result:</h6>
+                    <p class="alert alert-success">
+                        @guardedDateLoaded
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string guardedDateLoaded = "Loading...";
+
+    /// <summary>
+    /// INCORRECT: Unguarded JavaScript interop call during prerendering.
+    /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        // BL0016 WARNING: This JavaScript call is unguarded
+        // var unguardedDate = await JS.InvokeAsync<string>("getCurrentDate");
+        // System.Diagnostics.Debug.WriteLine($"Unguarded call: {unguardedDate}");
+    }
+
+    /// <summary>
+    /// CORRECT: Using OnAfterRender with firstRender guard.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                guardedDateLoaded = await JS.InvokeAsync<string>("getCurrentDate");
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                guardedDateLoaded = $"Error: {ex.Message}";
+            }
+        }
+    }
+}

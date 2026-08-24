@@ -1,0 +1,242 @@
+@page "/correct-interop"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@inject JsInteropHelper Helper
+
+<PageTitle>Correct Interop Patterns</PageTitle>
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>Correct JavaScript Interop Patterns</h1>
+            <p class="text-muted">
+                All examples below are correctly written and produce NO warnings.
+                Build output should show zero BL0010, BL0015, and BL0016 warnings on this page.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Pattern 1: InvokeVoidAsync for Void Functions</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Scenario:</h6>
+                    <p>
+                        Calling a JavaScript function that doesn't return any value.
+                        Used for operations like showing notifications, updating UI, etc.
+                    </p>
+
+                    <h6>Code:</h6>
+                    <pre><code>await JS.InvokeVoidAsync("showNotification", "Hello!");</code></pre>
+
+                    <button class="btn btn-success" @onclick="TestVoidFunctionAsync">
+                        Test Void Function
+                    </button>
+                    <p class="mt-2" id="void-result"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Pattern 2: InvokeAsync&lt;T&gt; for Functions with Return Values</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Scenario:</h6>
+                    <p>
+                        Calling a JavaScript function that returns a value.
+                        Wait for the result and use it in your C# code.
+                    </p>
+
+                    <h6>Code:</h6>
+                    <pre><code>var result = await JS.InvokeAsync&lt;int&gt;("calculateSum", 10, 20);
+// result = 30</code></pre>
+
+                    <button class="btn btn-success" @onclick="TestReturnValueFunctionAsync">
+                        Test Return Value Function
+                    </button>
+                    <p class="mt-2" id="return-result"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Pattern 3: Public [JSInvokable] Methods</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Scenario:</h6>
+                    <p>
+                        Exposing a .NET method to be called from JavaScript.
+                        JavaScript uses DotNet.invokeMethodAsync() to call it.
+                    </p>
+                    <button class="btn btn-success" @onclick="TestPublicInvokableAsync">
+                        Test Public [JSInvokable]
+                    </button>
+                    <p class="mt-2" id="invokable-result"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Pattern 4: Guarded Interop in OnAfterRender</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Scenario:</h6>
+                    <p>
+                        JavaScript interop in a lifecycle method that runs after the browser is ready.
+                        Wrapped in <code>if (firstRender)</code> to ensure it only runs once.
+                    </p>
+
+                    <p class="mt-3" id="guarded-result">
+                        <em>Configuration loaded safely: Will show after first render...</em>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Pattern 5: Helper Class Encapsulation</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Scenario:</h6>
+                    <p>
+                        Encapsulating interop logic in a reusable helper class.
+                        Best practice for maintaining code and ensuring consistency.
+                    </p>
+
+                    <h6>Code:</h6>
+                    <pre><code>public class JsInteropHelper
+{{
+    // Correctly implemented methods that can be reused
+    public async Task ShowNotificationAsync(string msg)
+    public async Task&lt;int&gt; CalculateSumAsync(int a, int b)
+    [JSInvokable]
+    public async Task ProcessDataCorrectlyAsync(...)
+}}</code></pre>
+                    <button class="btn btn-success" @onclick="TestHelperClassAsync">
+                        Test Helper Class Method
+                    </button>
+                    <p class="mt-2" id="helper-result"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private string configLoaded = "Loading...";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                configLoaded = await JS.InvokeAsync<string>("getConfigurationCorrect");
+                await JS.InvokeVoidAsync("eval", 
+                    $"document.getElementById('guarded-result').innerText = 'Configuration loaded: ' + '{configLoaded}'");
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// CORRECT PATTERN 1: InvokeVoidAsync for void function
+    /// </summary>
+    private async Task TestVoidFunctionAsync()
+    {
+        try
+        {
+            await Helper.ShowNotificationAsync("Hello from Correct Interop page!");
+            await JS.InvokeVoidAsync("setElementText", "void-result", 
+                "✓ Void function called successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// CORRECT PATTERN 2: InvokeAsync<T> for function with return value
+    /// </summary>
+    private async Task TestReturnValueFunctionAsync()
+    {
+        try
+        {
+            int result = await Helper.CalculateSumAsync(15, 25);
+            await JS.InvokeVoidAsync("setElementText", "return-result", 
+                $"✓ Calculated sum: 15 + 25 = {result}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// CORRECT PATTERN 3: Public [JSInvokable] method callable from JavaScript
+    /// </summary>
+    private async Task TestPublicInvokableAsync()
+    {
+        try
+        {
+            using var dotNetRef = DotNetObjectReference.Create(this);
+            var result = await JS.InvokeAsync<string>("callPublicMethod", dotNetRef, "user789", "important data");
+            await JS.InvokeVoidAsync("setElementHtml", "invokable-result", 
+                $"<span class='text-success'>✓ {result}</span>");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// CORRECT PATTERN 3: Public [JSInvokable] method
+    /// </summary>
+    [JSInvokable]
+    public async Task PublicProcessDataAsync(string userId, string data)
+    {
+        System.Diagnostics.Debug.WriteLine($"Processing data for {userId}: {data}");
+        await Task.Delay(100);
+    }
+
+    /// <summary>
+    /// CORRECT PATTERN 5: Helper class method
+    /// </summary>
+    private async Task TestHelperClassAsync()
+    {
+        try
+        {
+            int sum = await Helper.CalculateSumAsync(100, 200);
+            await JS.InvokeVoidAsync("setElementText", "helper-result", 
+                $"✓ Helper class: 100 + 200 = {sum}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}

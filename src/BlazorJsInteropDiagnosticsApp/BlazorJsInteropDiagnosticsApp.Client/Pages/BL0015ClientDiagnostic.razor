@@ -1,0 +1,97 @@
+﻿@page "/bl0015-client"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<PageTitle>BL0015 Diagnostic Test</PageTitle>
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>BL0015: [JSInvokable] Methods Must Be Public</h1>
+            <p class="text-muted">
+                Test the analyzer warning for private [JSInvokable] methods.
+                This warning has an automatic code fix.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">INCORRECT PATTERN (Triggers BL0015)</h5>
+                </div>
+                <div class="card-body">                    
+                    <h6>Problem:</h6>
+                    <p>
+                        Marked the method with <code>[JSInvokable]</code> to expose it to JavaScript,
+                        but made it <code>private</code>. This is contradictory - JavaScript cannot call
+                        private methods from outside the class.
+                    </p>
+
+                    <button class="btn btn-warning" @onclick="TestPrivateMethodAsync">
+                        Try to Call Private Method
+                    </button>
+                    <p class="mt-2" id="private-result"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">CORRECT PATTERN (No Warning)</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Why This Is Correct:</h6>
+                    <p>
+                        <code>public [JSInvokable]</code> methods are accessible from JavaScript.
+                        The method can be invoked from browser via DotNet.invokeMethodAsync.
+                    </p>
+                    <button class="btn btn-success" @onclick="TestPublicMethodAsync">
+                        Call Public Method
+                    </button>
+                    <p class="mt-2" id="public-result"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="text-danger">@privateResult</p>
+<p class="text-success">@publicResult</p>
+
+@code {
+    private string? privateResult;
+    private string? publicResult;
+
+    [JSInvokable]
+    private Task SaveUserDataPrivateAsync(string userId, string data)
+    {
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public Task SaveUserDataPublicAsync(string userId, string data)
+    {
+        return Task.CompletedTask;
+    }
+
+    private async Task TestPrivateMethodAsync()
+    {
+        using var dotNetReference = DotNetObjectReference.Create(this);
+
+        privateResult = await JS.InvokeAsync<string>(
+            "testCallToPrivateMethod",
+            dotNetReference);
+    }
+
+    private async Task TestPublicMethodAsync()
+    {
+        using var dotNetReference = DotNetObjectReference.Create(this);
+
+        publicResult = await JS.InvokeAsync<string>(
+            "testCallToPublicMethod",
+            dotNetReference);
+    }
+}

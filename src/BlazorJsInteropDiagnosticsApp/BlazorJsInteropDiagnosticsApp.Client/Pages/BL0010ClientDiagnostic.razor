@@ -1,0 +1,94 @@
+﻿@page "/bl0010-client"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<PageTitle>BL0010 Diagnostic Test</PageTitle>
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>BL0010: InvokeAsync&lt;object&gt; for Void Functions</h1>
+            <p class="text-muted">
+                Test the analyzer warning for incorrect invoke patterns.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">INCORRECT PATTERN (Triggers BL0010)</h5>
+                </div>
+                <div class="card-body">                    
+                    <h6>Problem:</h6>
+                    <p>
+                        Using <code>InvokeAsync&lt;object&gt;()</code> expects the JavaScript function to return
+                        a serializable value. But if the function returns <strong>non-serializable data</strong>
+                        (functions, symbols, circular references, etc.), deserialization FAILS at runtime.
+                    </p>
+
+                    <button class="btn btn-warning" @onclick="TestIncorrectPatternAsync">
+                        Test Incorrect Pattern (See Error)
+                    </button>
+                    <p class="mt-2" id="incorrect-result">@incorrectResult</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">CORRECT PATTERN (No Warning)</h5>
+                </div>
+                <div class="card-body">
+
+                    <h6>Why This Is Correct:</h6>
+                    <p>
+                        <code>InvokeVoidAsync()</code> discards return values without deserializing them.
+                        This eliminates serialization errors, even when the JavaScript function returns 
+                        non-serializable data (like circular references).
+                    </p>
+                    <button class="btn btn-success" @onclick="TestCorrectPatternAsync">
+                        Test Correct Pattern (Should Work)
+                    </button>
+                    <p class="mt-2" id="correct-result">@correctResult</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string incorrectResult = "";
+    private string correctResult = "";
+
+    // INCORRECT: InvokeAsync<object> with non-serializable return
+    private async Task TestIncorrectPatternAsync()
+    {
+        try
+        {
+            var result = await JS.InvokeAsync<object>("getComplexObject");
+            incorrectResult = $"<span class='text-success'>Unexpected success: {result}</span>";
+        }
+        catch (Exception ex)
+        {
+            incorrectResult = $"<span class='text-danger'>Expected Error (predicted by BL0010): {ex.Message}</span>";
+            Console.WriteLine($"[BL0010] Expected serialization error: {ex.Message}");
+        }
+    }
+
+    // CORRECT: InvokeVoidAsync for void functions
+    private async Task TestCorrectPatternAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("getComplexObject");
+            correctResult = "<span class='text-success'>SUCCESS: getComplexObject called safely via InvokeVoidAsync (no serialization issues)</span>";
+        }
+        catch (Exception ex)
+        {
+            correctResult = $"<span class='text-danger'>Error: {ex.Message}</span>";
+        }
+    }
+}
