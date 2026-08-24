@@ -25,6 +25,14 @@ namespace BlazorJsInteropDiagnosticsApp.RCL
             await Task.Delay(100);
         }
 
+        // BL0015: Incorrect pattern - Private [JSInvokable] with multiple modifiers
+        [JSInvokable]
+        private static async Task ProcessUserDataPrivateAsync(string userId, string data)
+        {
+            System.Diagnostics.Debug.WriteLine($"Processing data for user {userId}: {data}");
+            await Task.Delay(100);
+        }
+
         // Helper method to receive callback from JavaScript
         public async Task ProcessFromJavaScriptAsync()
         {
