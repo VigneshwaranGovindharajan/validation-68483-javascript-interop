@@ -85,9 +85,11 @@ protected override async Task OnInitializedAsync()
     /// </summary>
     protected override async Task OnInitializedAsync()
     {
-        // BL0016 WARNING: This JavaScript call is unguarded
-        // var unguardedDate = await JS.InvokeAsync<string>("getCurrentDate");
-        // System.Diagnostics.Debug.WriteLine($"Unguarded call: {unguardedDate}");
+        // BL0016: UNGUARDED pattern - Demonstrates runtime failure during prerendering
+        // WARNING: This code will throw a runtime error because JS is unavailable during prerendering.
+        // Uncomment only for testing BL0016 runtime behavior. Comment out to avoid runtime exceptions.
+        var unguardedDate = await JS.InvokeAsync<string>("getCurrentDate");
+        System.Diagnostics.Debug.WriteLine($"Unguarded call: {unguardedDate}");
     }
 
     /// <summary>

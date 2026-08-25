@@ -23,7 +23,14 @@ public class JsInteropHelper
     /// </summary>
     public async Task ShowNotificationAsync(string message)
     {
-        await _jsRuntime.InvokeVoidAsync("showNotification", message);
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync("showNotification", message);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error calling showNotification: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -33,6 +40,14 @@ public class JsInteropHelper
     /// </summary>
     public async Task<int> CalculateSumAsync(int a, int b)
     {
-        return await _jsRuntime.InvokeAsync<int>("calculateSum", a, b);
+        try
+        {
+            return await _jsRuntime.InvokeAsync<int>("calculateSum", a, b);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error calling calculateSum: {ex.Message}");
+            return 0;
+        }
     }
 }

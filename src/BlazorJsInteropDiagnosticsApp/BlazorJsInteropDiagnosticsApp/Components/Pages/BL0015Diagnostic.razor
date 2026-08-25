@@ -80,18 +80,30 @@
     private async Task TestPrivateMethodAsync()
     {
         using var dotNetReference = DotNetObjectReference.Create(this);
-
-        privateResult = await JS.InvokeAsync<string>(
-            "testCallToPrivateMethod",
-            dotNetReference);
+        try
+        {
+            privateResult = await JS.InvokeAsync<string>(
+                "testCallToPrivateMethod",
+                dotNetReference);
+        }
+        catch (JSException jsEx)
+        {
+            privateResult = $"Error calling private method: {jsEx.Message}";
+        }
     }
 
     private async Task TestPublicMethodAsync()
     {
         using var dotNetReference = DotNetObjectReference.Create(this);
-
-        publicResult = await JS.InvokeAsync<string>(
-            "testCallToPublicMethod",
-            dotNetReference);
+        try
+        {
+            publicResult = await JS.InvokeAsync<string>(
+                "testCallToPublicMethod",
+                dotNetReference);
+        }
+        catch (JSException jsEx)
+        {
+            publicResult = $"Error calling public method: {jsEx.Message}";
+        }
     }
 }
