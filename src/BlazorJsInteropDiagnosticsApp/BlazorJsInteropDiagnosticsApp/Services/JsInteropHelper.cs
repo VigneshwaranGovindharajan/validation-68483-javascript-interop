@@ -44,10 +44,15 @@ public class JsInteropHelper
         {
             return await _jsRuntime.InvokeAsync<int>("calculateSum", a, b);
         }
+        catch (JSDisconnectedException ex)
+        {
+            Debug.WriteLine($"JS disconnected while calling calculateSum: {ex.Message}");
+            return 0;
+        }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error calling calculateSum: {ex.Message}");
-            return 0;
+            Debug.WriteLine($"Unexpected error calling calculateSum: {ex.Message}");
+            throw;
         }
     }
 }

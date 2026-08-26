@@ -51,8 +51,8 @@ protected override async Task OnInitializedAsync()
     protected override async Task OnInitializedAsync()
     {
         // BL0016: UNGUARDED pattern - Demonstrates runtime failure during prerendering
-        // WARNING: This code will throw a runtime error because JS is unavailable during prerendering.
-        // Uncomment only for testing BL0016 runtime behavior. Comment out to avoid runtime exceptions.
+        // WARNING: This code IS ACTIVE and will throw a runtime error because JS is unavailable during prerendering.
+        // This demonstrates why BL0016 warning exists. Runtime failure expected during Static SSR.
         var data = await JS.InvokeAsync<string>("getConfiguration");
     }
 }
