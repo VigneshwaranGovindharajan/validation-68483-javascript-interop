@@ -24,15 +24,15 @@
                 <div class="card-body">
                     <h6>Problem:</h6>
                     <p>
-                        If the following unguarded JavaScript interop call is uncommented:
+                        The following code is an example of an unguarded JavaScript interop call.
                     </p>
 
                     <pre>
                         <code>
 protected override async Task OnInitializedAsync()
 {
-    // var unguardedDate = await JS.InvokeAsync&lt;string&gt("getCurrentDate");
-    // System.Diagnostics.Debug.WriteLine($"Unguarded call: {unguardedDate}");
+    var unguardedDate = await JS.InvokeAsync&lt;string&gt("getCurrentDate");
+    System.Diagnostics.Debug.WriteLine($"Unguarded call: {unguardedDate}");
 }
                         </code>
                     </pre>

@@ -47,7 +47,7 @@ public class JsInteropHelper
         catch (JSDisconnectedException ex)
         {
             Debug.WriteLine($"JS disconnected while calling calculateSum: {ex.Message}");
-            return 0;
+            throw;
         }
         catch (Exception ex)
         {
